@@ -35,6 +35,8 @@ class Client extends MicroserviceClient
 
   public function setMultipart(bool $b): void {$this->isMultipart = $b;}
 
+  public function verifyPeer(bool $b): void {Request::verifyPeer($b);}
+
   public function setPlatform(string $platform): void {$this->platform=$platform;}
 
   public function setPlatformVersion(string $platformVersion): void {$this->platformVersion=$platformVersion;}
@@ -60,6 +62,35 @@ class Client extends MicroserviceClient
     }
     if (!$this->hasHeader(self::HEADER_PARAM_APP_NAME)) {
       $this->addHeader(self::HEADER_PARAM_APP_NAME, $this->getConfig('app_name'));
+    }
+    $this->bearerToken();
+  }
+
+  private function bearerToken(): void {
+    if (!$this->hasHeader(self::HEADER_PARAM_ACCESS_TOKEN)) {
+      if (!isset($_COOKIE['ezpz_token'])) {
+        $tokenUri = $this->getConfig('token_uri');
+        if ($this->getConfig('env') === 'local') {
+          $this->verifyPeer(false);
+        }
+        $response = Request::post(
+          $this->url($tokenUri), $this->getHeaders(),
+          null,
+          $this->getConfig('client_id'),
+          $this->getConfig('client_secret')
+        );
+        if (
+          isset($response->body->data)
+          && isset($response->body->data->AuthorizationBearerToken)
+          && isset($response->body->data->expire_in)
+        ) {
+          setcookie('ezpz_token', $response->body->data->AuthorizationBearerToken, time() + ($response->body->data->expire_in - (10 * 60 * 1000)), "/");
+          $this->addHeader(self::HEADER_PARAM_ACCESS_TOKEN, 'Bearer ' . $response->body->data->AuthorizationBearerToken);
+        }
+      }
+      else {
+        $this->addHeader(self::HEADER_PARAM_ACCESS_TOKEN, 'Bearer ' . $_COOKIE['ezpz_token']);
+      }
     }
   }
 
