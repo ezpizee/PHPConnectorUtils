@@ -18,6 +18,7 @@
     ],
     "require": {
         "php": ">=7.0",
+        "lcobucci/jwt": "^3.3",
         "ezpizee/microservices-client": "dev-master"
     },
     "autoload": {
