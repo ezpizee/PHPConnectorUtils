@@ -14,9 +14,6 @@ class Client extends MicroserviceClient
     {
         $env = isset($data['env']) ? $data['env'] : '';
         $url = self::apiSchema($env) . self::apiHost($env) . Endpoints::INSTALL;
-        if ($env === 'local') {
-            Request::verifyPeer(false);
-        }
         $response = Request::post(
             $url,
             null,
@@ -50,10 +47,7 @@ class Client extends MicroserviceClient
         return '/install/html/index.' . $platform . '.html';
     }
 
-    public static function apiSchema(string $env): string
-    {
-        return 'https://';
-    }
+    public static function apiSchema(string $env): string {return 'http'.($env==='local'?'s':'s').'://';}
 
     public static function apiHost(string $env): string
     {
@@ -65,10 +59,7 @@ class Client extends MicroserviceClient
         return self::apiSchema($env) . self::apiHost($env);
     }
 
-    public static function cdnSchema(string $env): string
-    {
-        return 'https://';
-    }
+    public static function cdnSchema(string $env): string {return 'http'.($env==='local'?'s':'s').'://';}
 
     public static function cdnHost(string $env): string
     {
