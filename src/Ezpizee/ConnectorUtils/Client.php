@@ -32,42 +32,21 @@ class Client extends MicroserviceClient
         }
     }
 
-    public static function getTokenUri(): string
-    {
-        return Endpoints::GET_TOKEN;
-    }
+    public static function getTokenUri(): string {return Endpoints::GET_TOKEN;}
 
-    public static function adminUri(string $platform = 'ezpz', string $version = 'latest'): string
-    {
-        return '/adminui/' . $version . '/index.' . $platform . '.html';
-    }
+    public static function adminUri(string $platform = 'ezpz', string $version = 'latest'): string {return '/adminui/' . $version . '/index.' . $platform . '.html';}
 
-    public static function installUri(string $platform = 'ezpz'): string
-    {
-        return '/install/html/index.' . $platform . '.html';
-    }
+    public static function installUri(string $platform = 'ezpz'): string {return '/install/html/index.' . $platform . '.html';}
 
-    public static function apiSchema(string $env): string {return 'http'.($env==='local'?'s':'s').'://';}
+    public static function apiSchema(string $env): string {return 'http'.($env==='local'?'':'s').'://';}
 
-    public static function apiHost(string $env): string
-    {
-        return $env === 'dev' ? $env . '-api.ezpz.solutions' : ($env === 'prod' ? '' : $env . '-') . 'api.ezpizee.com';
-    }
+    public static function apiHost(string $env): string {return $env==='dev'?$env.'-api.ezpz.solutions':($env==='prod'?'':$env.'-').'api.ezpizee.com';}
 
-    public static function apiEndpointPfx(string $env): string
-    {
-        return self::apiSchema($env) . self::apiHost($env);
-    }
+    public static function apiEndpointPfx(string $env): string {return self::apiSchema($env) . self::apiHost($env);}
 
     public static function cdnSchema(string $env): string {return 'http'.($env==='local'?'s':'s').'://';}
 
-    public static function cdnHost(string $env): string
-    {
-        return ($env === 'prod' ? '' : $env . '-') . 'cdn.ezpz.solutions';
-    }
+    public static function cdnHost(string $env): string {return ($env==='prod'?'':($env==='local'?'dev':$env).'-').'cdn.ezpz.solutions';}
 
-    public static function cdnEndpointPfx(string $env): string
-    {
-        return self::cdnSchema($env) . self::cdnHost($env);
-    }
+    public static function cdnEndpointPfx(string $env): string {return self::cdnSchema($env) . self::cdnHost($env);}
 }
