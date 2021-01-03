@@ -16,12 +16,7 @@ class Client extends MicroserviceClient
     {
         $env = isset($data['env']) ? $data['env'] : '';
         $url = self::apiSchema($env) . self::apiHost($env) . Endpoints::INSTALL;
-        $response = Request::post(
-            $url,
-            null,
-            $data
-        );
-
+        $response = Request::post($url, null, $data);
         if (isset($response->body->data)
             && isset($response->body->data->AuthorizationBearerToken)
             && isset($response->body->data->expire_in)) {
