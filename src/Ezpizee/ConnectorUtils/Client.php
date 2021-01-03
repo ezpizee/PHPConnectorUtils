@@ -16,17 +16,23 @@ class Client extends MicroserviceClient
     {
         $env = isset($data['env']) ? $data['env'] : '';
         $url = self::apiSchema($env) . self::apiHost($env) . Endpoints::INSTALL;
-        $response = Request::post($url, null, $data);
+        $response = Request::post($url, [
+            self::HEADER_PARAM_USER_AGENT => self::HEADER_VALUE_USER_AGENT
+        ], $data);
         if (isset($response->body->data)
             && isset($response->body->data->AuthorizationBearerToken)
             && isset($response->body->data->expire_in)) {
 
             $key = uniqid('ezpz_token_handler_');
-            $expire = 0;
-            setcookie($tokenKey, $key, $expire, "/");
-
             $tokenHandler = new $tokenHandler($key);
             if ($tokenHandler instanceof TokenHandlerInterface) {
+                $expire = 0;
+                if (method_exists($tokenHandler, 'setCookie')) {
+                    $tokenHandler->setCookie($tokenKey, $key, $expire, '/');
+                }
+                else {
+                    setcookie($tokenKey, $key, $expire, "/");
+                }
                 $tokenHandler->keepToken(new Token(json_decode(json_encode($response->body->data), true)));
             }
 
@@ -51,7 +57,7 @@ class Client extends MicroserviceClient
 
     public static function cdnSchema(string $env): string {return 'http'.($env==='local'?'s':'s').'://';}
 
-    public static function cdnHost(string $env): string {return ($env==='prod'?'':($env==='local'?'dev':$env).'-').'cdn.ezpz.solutions';}
+    public static function cdnHost(string $env): string {return ($env==='prod'?'':($env==='local'?'local':$env).'-').'cdn.ezpz.solutions';}
 
     public static function cdnEndpointPfx(string $env): string {return self::cdnSchema($env) . self::cdnHost($env);}
 }
