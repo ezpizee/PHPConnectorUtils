@@ -57,7 +57,7 @@ class Client extends MicroserviceClient
 
     public static function cdnSchema(string $env): string {return 'http'.($env==='local'?'s':'s').'://';}
 
-    public static function cdnHost(string $env): string {return ($env==='prod'?'':($env==='local'?'local':$env).'-').'cdn.ezpz.solutions';}
+    public static function cdnHost(string $env): string {return ($env==='prod'?'':($env==='local'?'dev':$env).'-').'cdn.ezpz.solutions';}
 
     public static function cdnEndpointPfx(string $env): string {return self::cdnSchema($env) . self::cdnHost($env);}
 }
