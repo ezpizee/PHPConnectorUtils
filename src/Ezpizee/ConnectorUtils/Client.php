@@ -6,6 +6,7 @@ use Ezpizee\MicroservicesClient\Client as MicroserviceClient;
 use Ezpizee\MicroservicesClient\Token;
 use Ezpizee\MicroservicesClient\TokenHandlerInterface;
 use Ezpizee\Utils\EncodingUtil;
+use Ezpizee\Utils\Logger;
 use Unirest\Request;
 
 class Client extends MicroserviceClient
@@ -16,29 +17,26 @@ class Client extends MicroserviceClient
     {
         $env = isset($data['env']) ? $data['env'] : '';
         $url = self::apiSchema($env) . self::apiHost($env) . Endpoints::INSTALL;
-        $response = Request::post($url, [
-            self::HEADER_PARAM_USER_AGENT => self::HEADER_VALUE_USER_AGENT
-        ], $data);
+
+        Logger::debug("API Call: POST ".$url);
+
+        $response = Request::post($url, [self::HEADER_PARAM_USER_AGENT => self::HEADER_VALUE_USER_AGENT], $data);
+
         if (isset($response->body->data)
             && isset($response->body->data->AuthorizationBearerToken)
-            && isset($response->body->data->expire_in)) {
-
-            $key = uniqid('ezpz_token_handler_');
-            $tokenHandler = new $tokenHandler($key);
+            && isset($response->body->data->expire_in))
+        {
+            $cookieVal = uniqid(self::SESSION_COOKIE_VALUE_PFX);
+            $tokenHandler = new $tokenHandler($cookieVal);
             if ($tokenHandler instanceof TokenHandlerInterface) {
-                $expire = 0;
-                if (method_exists($tokenHandler, 'setCookie')) {
-                    $tokenHandler->setCookie($tokenKey, $key, $expire, '/');
-                }
-                else {
-                    setcookie($tokenKey, $key, $expire, "/");
-                }
+                $tokenHandler->setCookie($tokenKey, $cookieVal);
                 $tokenHandler->keepToken(new Token(json_decode(json_encode($response->body->data), true)));
             }
 
             return json_decode($response->raw_body, true);
         }
-        else {
+        else
+        {
             return json_decode(EncodingUtil::isValidJSON($response->raw_body) ? $response->raw_body : '[]', true);
         }
     }
