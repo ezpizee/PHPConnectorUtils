@@ -18,6 +18,7 @@
     ],
     "require": {
         "php": ">=7.0",
+        "ezpizee/utils": "dev-master",
         "ezpizee/microservices-client": "dev-master"
     },
     "autoload": {
