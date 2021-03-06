@@ -9,4 +9,5 @@ class Endpoints
     const GET_TOKEN = '/api/user/token';
     const LOGOUT = "/api/user/logout";
     const REGISTER = "/api/user/add";
+    const ACTIVATE = "/api/user/activate/{id}";
 }

@@ -15,6 +15,42 @@ class Client extends MicroserviceClient
 {
     const DEFAULT_ACCESS_TOKEN_KEY = "ezpz_access_token";
 
+    public static function activate(array $data)
+    : array
+    {
+        if (
+            !isset($data['env']) || !isset($data['appname']) ||
+            empty($data['env']) || empty($data['appname']) ||
+            !isset($data['email']) || empty($data['email']) ||
+            !isset($data['verification_code']) || empty($data['verification_code']) ||
+            !isset($data['system_user_client_id']) || empty($data['system_user_client_id']) ||
+            !isset($data['system_user_client_secret']) || empty($data['system_user_client_secret'])
+        ) {
+            throw new RuntimeException('Invalid data provided: '.self::class.'->activate',
+                ResponseCodes::CODE_ERROR_INVALID_DATA);
+        }
+
+        $url = self::apiEndpointPfx($data['env']) .
+            str_replace('{id}', $data['email'], Endpoints::ACTIVATE);
+
+        Logger::debug("API Call: POST " . $url);
+
+        $response = Request::post($url, [
+            self::HEADER_PARAM_APP_NAME => $data['appname'],
+            self::HEADER_PARAM_USER_AGENT => self::HEADER_VALUE_USER_AGENT,
+            self::HEADER_PARAM_ACCESS_TOKEN => 'Basic '.base64_encode($data['system_user_client_id'].':'.$data['system_user_client_secret'])
+        ], [
+            'verification_code' => $data['verification_code']
+        ]);
+
+        if (isset($response->body->data) && (int)$response->code === 200) {
+            return json_decode($response->raw_body, true);
+        }
+        else {
+            return json_decode(EncodingUtil::isValidJSON($response->raw_body) ? $response->raw_body : '[]', true);
+        }
+    }
+
     public static function register(array $data)
     : array
     {
@@ -22,6 +58,7 @@ class Client extends MicroserviceClient
             !isset($data['env']) || !isset($data['email']) || !isset($data['password']) || !isset($data['appname']) ||
             empty($data['env']) || empty($data['email']) || empty($data['password']) || empty($data['appname']) ||
             !isset($data['cellphone']) || empty($data['cellphone']) ||
+            !isset($data['verification_code']) || empty($data['verification_code']) ||
             !isset($data['system_user_client_id']) || empty($data['system_user_client_id']) ||
             !isset($data['system_user_client_secret']) || empty($data['system_user_client_secret'])
         ) {
@@ -41,6 +78,7 @@ class Client extends MicroserviceClient
             'email' => $data['email'],
             'password' => $data['password'],
             'cellphone' => $data['cellphone'],
+            'verification_code' => $data['verification_code'],
             'suppress_activate_email' => isset($data['suppress_activate_email']) ? $data['suppress_activate_email'] : 0
         ]);
 
