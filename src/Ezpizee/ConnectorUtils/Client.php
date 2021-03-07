@@ -44,7 +44,8 @@ class Client extends MicroserviceClient
         $response = Request::post($url, $headers, null, $user, $pwd);
         $res = new EzpzAuthedUser(json_decode(json_encode($response->body), true));
         if ($res->getCode() !== 200) {
-            throw new RuntimeException('FAILED_TO_FETCH_ACCESS_TOKEN');
+            Logger::debug($res->jsonSerialize());
+            throw new RuntimeException('FAILED_TO_FETCH_ACCESS_TOKEN', ResponseCodes::CODE_ERROR_INVALID_DATA);
         }
         return $res;
     }

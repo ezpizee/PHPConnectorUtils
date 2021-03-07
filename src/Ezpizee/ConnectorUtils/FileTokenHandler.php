@@ -1,6 +1,6 @@
 <?php
 
-namespace Ezpizee\ConnectorUtils;;
+namespace Ezpizee\ConnectorUtils;
 
 class FileTokenHandler
 {
@@ -73,13 +73,23 @@ class FileTokenHandler
     }
 
     private static function filename(int $userId): string {
+        if (!defined('ROOT_DIR')) {die('ROOT_DIR is not defined');}
         $file = ROOT_DIR.EZPIZEE_DS.'tmp'.EZPIZEE_DS.'token';
         if (strlen($userId) > 0) {
             $file = $file.EZPIZEE_DS.substr($userId,0,1);
+            if (!file_exists($file)) {
+                mkdir($file);
+            }
             if (strlen($userId) > 1) {
                 $file = $file.EZPIZEE_DS.substr($userId,1,1);
+                if (!file_exists($file)) {
+                    mkdir($file);
+                }
                 if (strlen($userId) > 2) {
                     $file = $file.EZPIZEE_DS.substr($userId,2,1);
+                    if (!file_exists($file)) {
+                        mkdir($file);
+                    }
                 }
             }
             $file = $file.EZPIZEE_DS.$userId.'.json';
