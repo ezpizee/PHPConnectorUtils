@@ -15,6 +15,40 @@ class Client extends MicroserviceClient
 {
     const DEFAULT_ACCESS_TOKEN_KEY = "ezpz_access_token";
 
+    public static function apiSchema(string $env): string {return 'http' . ($env === 'local' ? '' : 's') . '://';}
+
+    public static function cdnSchema(string $env): string {return 'http' . ($env === 'local' ? '' : 's') . '://';}
+
+    public static function storeFrontSchema(string $env): string {return 'http' . ($env === 'local' ? '' : 's') . '://';}
+
+    public static function apiHost(string $env): string {return ($env === 'prod' ? '' : $env . '-') . 'api.ezpizee.com';}
+
+    public static function cdnHost(string $env): string {return ($env === 'prod' ? '' : $env . '-') . 'cdn.ezpz.solutions';}
+
+    public static function storeFrontHost(string $env): string {return ($env === 'prod' ? '' : $env . '-') . 'storefront.ezpz.solutions';}
+
+    public static function apiEndpointPfx(string $env): string {return self::apiSchema($env) . self::apiHost($env);}
+
+    public static function cdnEndpointPfx(string $env): string {return self::cdnSchema($env) . self::cdnHost($env);}
+
+    public static function storeFrontEndpointPfx(string $env): string {return self::storeFrontSchema($env) . self::storeFrontHost($env);}
+
+    public static function getTokenUri(): string {return Endpoints::GET_TOKEN;}
+
+    public static function adminUri(string $platform = 'ezpz', string $version = 'latest'): string {return '/adminui/' . $version . '/index.' . $platform . '.html';}
+
+    public static function installUri(string $platform = 'ezpz'): string {return '/install/html/index.' . $platform . '.html';}
+
+    public static function getBearerToken(string $url, string $user, string $pwd, array $headers): EzpzAuthedUser {
+        $headers = self::standardBaseHeaders($headers);
+        $response = Request::post($url, $headers, null, $user, $pwd);
+        $res = new EzpzAuthedUser(json_decode(json_encode($response->body), true));
+        if ($res->getCode() !== 200) {
+            throw new RuntimeException('FAILED_TO_FETCH_ACCESS_TOKEN');
+        }
+        return $res;
+    }
+
     public static function activate(array $data)
     : array
     {
@@ -35,13 +69,13 @@ class Client extends MicroserviceClient
 
         Logger::debug("API Call: POST " . $url);
 
-        $response = Request::post($url, [
+        $headers = self::standardBaseHeaders([
             self::HEADER_PARAM_APP_NAME => $data['appname'],
             self::HEADER_PARAM_USER_AGENT => self::HEADER_VALUE_USER_AGENT,
             self::HEADER_PARAM_ACCESS_TOKEN => 'Basic '.base64_encode($data['system_user_client_id'].':'.$data['system_user_client_secret'])
-        ], [
-            'verification_code' => $data['verification_code']
         ]);
+
+        $response = Request::post($url, $headers, ['verification_code' => $data['verification_code']]);
 
         if (isset($response->body->data) && (int)$response->code === 200) {
             return json_decode($response->raw_body, true);
@@ -70,11 +104,13 @@ class Client extends MicroserviceClient
 
         Logger::debug("API Call: POST " . $url);
 
-        $response = Request::post($url, [
+        $headers = self::standardBaseHeaders([
             self::HEADER_PARAM_APP_NAME => $data['appname'],
             self::HEADER_PARAM_USER_AGENT => self::HEADER_VALUE_USER_AGENT,
             self::HEADER_PARAM_ACCESS_TOKEN => 'Basic '.base64_encode($data['system_user_client_id'].':'.$data['system_user_client_secret'])
-        ], [
+        ]);
+
+        $response = Request::post($url, $headers, [
             'email' => $data['email'],
             'password' => $data['password'],
             'cellphone' => $data['cellphone'],
@@ -103,11 +139,13 @@ class Client extends MicroserviceClient
 
         Logger::debug("API Call: POST " . $url);
 
-        $response = Request::post($url, [
+        $headers = self::standardBaseHeaders([
             self::HEADER_PARAM_APP_NAME => $data['appname'],
             self::HEADER_PARAM_USER_AGENT => self::HEADER_VALUE_USER_AGENT,
             self::HEADER_PARAM_ACCESS_TOKEN => 'Basic '.base64_encode($data['username'].':'.$data['password'])
         ]);
+
+        $response = Request::post($url, $headers);
 
         if (isset($response->body->data)
             && isset($response->body->data->token_param_name)
@@ -130,14 +168,14 @@ class Client extends MicroserviceClient
         }
 
         $url = self::apiEndpointPfx($data['env']) . Endpoints::LOGOUT;
-
         Logger::debug("API Call: POST " . $url);
-
-        Request::post($url, [
+        $headers = self::standardBaseHeaders([
             self::HEADER_PARAM_USER_AGENT => self::HEADER_VALUE_USER_AGENT,
             self::HEADER_PARAM_APP_NAME => $data['appname'],
             self::HEADER_PARAM_ACCESS_TOKEN => 'Bearer '.$data['token']
         ]);
+
+        Request::post($url, $headers);
     }
 
     public static function install(string $tokenKey, array $data, $tokenHandler)
@@ -145,10 +183,9 @@ class Client extends MicroserviceClient
     {
         $env = isset($data['env']) ? $data['env'] : '';
         $url = self::apiEndpointPfx($env) . Endpoints::INSTALL;
-
         Logger::debug("API Call: POST " . $url);
-
-        $response = Request::post($url, [self::HEADER_PARAM_USER_AGENT => self::HEADER_VALUE_USER_AGENT], $data);
+        $headers = self::standardBaseHeaders([self::HEADER_PARAM_USER_AGENT => self::HEADER_VALUE_USER_AGENT]);
+        $response = Request::post($url, $headers, $data);
 
         if (isset($response->body->data)
             && isset($response->body->data->token_param_name)
@@ -168,57 +205,23 @@ class Client extends MicroserviceClient
         }
     }
 
-    public static function apiSchema(string $env)
-    : string
+    private static function standardBaseHeaders(array $headers)
+    : array
     {
-        return 'http' . ($env === 'local' ? '' : 's') . '://';
-    }
-
-    public static function apiHost(string $env)
-    : string
-    {
-        return ($env === 'prod' ? '' : $env . '-') . 'api.ezpizee.com';
-    }
-
-    public static function getTokenUri()
-    : string
-    {
-        return Endpoints::GET_TOKEN;
-    }
-
-    public static function adminUri(string $platform = 'ezpz', string $version = 'latest')
-    : string
-    {
-        return '/adminui/' . $version . '/index.' . $platform . '.html';
-    }
-
-    public static function installUri(string $platform = 'ezpz')
-    : string
-    {
-        return '/install/html/index.' . $platform . '.html';
-    }
-
-    public static function apiEndpointPfx(string $env)
-    : string
-    {
-        return self::apiSchema($env) . self::apiHost($env);
-    }
-
-    public static function cdnEndpointPfx(string $env)
-    : string
-    {
-        return self::cdnSchema($env) . self::cdnHost($env);
-    }
-
-    public static function cdnSchema(string $env)
-    : string
-    {
-        return 'http' . ($env === 'local' ? '' : 's') . '://';
-    }
-
-    public static function cdnHost(string $env)
-    : string
-    {
-        return ($env === 'prod' ? '' : $env . '-') . 'cdn.ezpz.solutions';
+        $arr = [
+            self::HEADER_PARAM_CTYPE => self::HEADER_VALUE_JSON,
+            self::HEADER_PARAM_ACCEPT => self::HEADER_VALUE_JSON,
+            self::HEADER_PARAM_USER_AGENT => self::HEADER_VALUE_USER_AGENT,
+            self::HEADER_PARAM_APP_VERSION => self::HEADER_VALUE_APP_VERSION,
+            self::HEADER_PARAM_APP_PLATFORM => self::HEADER_VALUE_APP_PLATFORM,
+            self::HEADER_PARAM_OS_PLATFORM_VERSION => self::HEADER_VALUE_OS_PLATFORM_VERSION,
+            self::HEADER_PARAM_APP_NAME => self::KEY_APP_NAME
+        ];
+        foreach ($headers as $k=>$v) {
+            if (!is_numeric($k)) {
+                $arr[$k] = $v;
+            }
+        }
+        return $arr;
     }
 }
