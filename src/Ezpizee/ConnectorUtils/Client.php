@@ -15,11 +15,11 @@ class Client extends MicroserviceClient
 {
     const DEFAULT_ACCESS_TOKEN_KEY = "ezpz_access_token";
 
-    public static function apiSchema(string $env): string {return 'http' . ($env === 'local' ? '' : 's') . '://';}
+    public static function apiSchema(string $env): string {return 'http' . ($env === 'local' ? (self::isHTTPS()?'s':'') : 's') . '://';}
 
-    public static function cdnSchema(string $env): string {return 'http' . ($env === 'local' ? '' : 's') . '://';}
+    public static function cdnSchema(string $env): string {return 'http' . ($env === 'local' ? (self::isHTTPS()?'s':'') : 's') . '://';}
 
-    public static function storeFrontSchema(string $env): string {return 'http' . ($env === 'local' ? '' : 's') . '://';}
+    public static function storeFrontSchema(string $env): string {return 'http' . ($env === 'local' ? (self::isHTTPS()?'s':'') : 's') . '://';}
 
     public static function apiHost(string $env): string {return ($env === 'prod' ? '' : $env . '-') . 'api.ezpizee.com';}
 
@@ -50,7 +50,7 @@ class Client extends MicroserviceClient
         return $res;
     }
 
-    public static function activate(array $data)
+    public static function activate(array $data, array $headers=array())
     : array
     {
         if (
@@ -70,11 +70,12 @@ class Client extends MicroserviceClient
 
         Logger::debug("API Call: POST " . $url);
 
-        $headers = self::standardBaseHeaders([
+        $headers = self::standardBaseHeaders(array_merge([
+            self::HEADER_PARAM_CTYPE => self::HEADER_VALUE_MULTIPART,
             self::HEADER_PARAM_APP_NAME => $data['appname'],
             self::HEADER_PARAM_USER_AGENT => self::HEADER_VALUE_USER_AGENT,
             self::HEADER_PARAM_ACCESS_TOKEN => 'Basic '.base64_encode($data['system_user_client_id'].':'.$data['system_user_client_secret'])
-        ]);
+        ], $headers));
 
         $response = Request::post($url, $headers, ['verification_code' => $data['verification_code']]);
 
@@ -86,7 +87,7 @@ class Client extends MicroserviceClient
         }
     }
 
-    public static function register(array $data)
+    public static function register(array $data, array $headers=array())
     : array
     {
         if (
@@ -105,11 +106,12 @@ class Client extends MicroserviceClient
 
         Logger::debug("API Call: POST " . $url);
 
-        $headers = self::standardBaseHeaders([
+        $headers = self::standardBaseHeaders(array_merge([
+            self::HEADER_PARAM_CTYPE => self::HEADER_VALUE_MULTIPART,
             self::HEADER_PARAM_APP_NAME => $data['appname'],
             self::HEADER_PARAM_USER_AGENT => self::HEADER_VALUE_USER_AGENT,
             self::HEADER_PARAM_ACCESS_TOKEN => 'Basic '.base64_encode($data['system_user_client_id'].':'.$data['system_user_client_secret'])
-        ]);
+        ], $headers));
 
         $response = Request::post($url, $headers, [
             'email' => $data['email'],
@@ -127,7 +129,7 @@ class Client extends MicroserviceClient
         }
     }
 
-    public static function login(array $data)
+    public static function login(array $data, array $headers=array())
     : array
     {
         if (!isset($data['env']) || !isset($data['username']) || !isset($data['password']) || !isset($data['appname']) ||
@@ -140,11 +142,12 @@ class Client extends MicroserviceClient
 
         Logger::debug("API Call: POST " . $url);
 
-        $headers = self::standardBaseHeaders([
+        $headers = self::standardBaseHeaders(array_merge([
+            self::HEADER_PARAM_CTYPE => self::HEADER_VALUE_MULTIPART,
             self::HEADER_PARAM_APP_NAME => $data['appname'],
             self::HEADER_PARAM_USER_AGENT => self::HEADER_VALUE_USER_AGENT,
             self::HEADER_PARAM_ACCESS_TOKEN => 'Basic '.base64_encode($data['username'].':'.$data['password'])
-        ]);
+        ], $headers));
 
         $response = Request::post($url, $headers);
 
@@ -159,7 +162,7 @@ class Client extends MicroserviceClient
         }
     }
 
-    public static function logout(array $data)
+    public static function logout(array $data, array $headers = array())
     : void
     {
         if (!isset($data['env']) || !isset($data['token']) || !isset($data['appname']) ||
@@ -170,22 +173,26 @@ class Client extends MicroserviceClient
 
         $url = self::apiEndpointPfx($data['env']) . Endpoints::LOGOUT;
         Logger::debug("API Call: POST " . $url);
-        $headers = self::standardBaseHeaders([
+        $headers = self::standardBaseHeaders(array_merge([
+            self::HEADER_PARAM_CTYPE => self::HEADER_VALUE_MULTIPART,
             self::HEADER_PARAM_USER_AGENT => self::HEADER_VALUE_USER_AGENT,
             self::HEADER_PARAM_APP_NAME => $data['appname'],
             self::HEADER_PARAM_ACCESS_TOKEN => 'Bearer '.$data['token']
-        ]);
+        ], $headers));
 
         Request::post($url, $headers);
     }
 
-    public static function install(string $tokenKey, array $data, $tokenHandler)
+    public static function install(string $tokenKey, array $data, $tokenHandler, array $headers=array())
     : array
     {
         $env = isset($data['env']) ? $data['env'] : '';
         $url = self::apiEndpointPfx($env) . Endpoints::INSTALL;
         Logger::debug("API Call: POST " . $url);
-        $headers = self::standardBaseHeaders([self::HEADER_PARAM_USER_AGENT => self::HEADER_VALUE_USER_AGENT]);
+        $headers = self::standardBaseHeaders(array_merge([
+            self::HEADER_PARAM_CTYPE => self::HEADER_VALUE_MULTIPART,
+            self::HEADER_PARAM_USER_AGENT => self::HEADER_VALUE_USER_AGENT
+        ], $headers));
         $response = Request::post($url, $headers, $data);
 
         if (isset($response->body->data)
@@ -224,5 +231,11 @@ class Client extends MicroserviceClient
             }
         }
         return $arr;
+    }
+
+    private static function isHTTPS(): bool {
+        return (int)$_SERVER['SERVER_PORT'] === 443 ||
+        (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === "https") ||
+        isset($_SERVER['HTTP_X_FORWARDED_SSL']) || isset($_SERVER['HTTPS']) ? true : false;
     }
 }
