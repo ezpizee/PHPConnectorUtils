@@ -15,6 +15,7 @@ class Endpoints
     const CART_CREATE = "/api/cart/create/{store_id}";
     const CART_CONTENT = "/api/cart/content/by/id/{id}";
     const CART_ADD_ITEM = "/api/cart/add/items/{cart_id}";
+    const APPLY_COUPON = "/api/cart/apply/coupon/{cart_id}";
 
 
     public static function endpoint(string $str, array $params = []): string
