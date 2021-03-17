@@ -17,6 +17,8 @@ class Endpoints
     const CART_CONTENT = "/api/cart/content/by/id/{id}";
     const CART_ADD_ITEM = "/api/cart/add/items/{cart_id}";
     const CART_REMOVE_ITEM = "/api/cart/remove/items/{cart_id}";
+    const CART_INCREASE_QUANTITY = "/api/cart/increase/quantity/{cart_id}/{product_id}/{increase_by}";
+    const CART_DECCREASE_QUANTITY = "/api/cart/decrease/quantity/{cart_id}/{product_id}/{decrease_by}";
     const CART_APPLY_COUPON = "/api/cart/apply/coupon/{cart_id}";
     const CART_CHECKOUT = "/api/cart/checkout/{cart_id}";
     const CART_REMOVE_COUPON = "/api/cart/remove/offer-type/coupon/{cart_id}";
