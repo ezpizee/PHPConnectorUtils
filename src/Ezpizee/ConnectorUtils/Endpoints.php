@@ -10,6 +10,8 @@ class Endpoints
     const LOGOUT = "/api/user/logout";
     const REGISTER = "/api/user/add";
     const ACTIVATE = "/api/user/activate/{id}";
+    const PREDRFIND_COUNTRY = "/api/global-property/predefined/countries";
+    const PAYMENT_SERVICE = "/api/payment/list";
     const PRODUCT_ITEM = "/api/pim/product/item/{id}";
     const PRODUCT_PRICE = "/api/pim/product/price/{id}";
     const CART_CREATE = "/api/cart/create/{store_id}";
