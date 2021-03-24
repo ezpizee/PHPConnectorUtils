@@ -12,6 +12,7 @@ class Endpoints
     const ACTIVATE = "/api/user/activate/{id}";
     const PREDRFIND_COUNTRY = "/api/global-property/predefined/countries";
     const PAYMENT_SERVICE = "/api/payment/list";
+    const PAYMENT_SERVICE_URL = "/api/payment/{payment_type}/{payment_id}/processing/url/{method_type}/{cart_id}";
     const PRODUCT_ITEM = "/api/pim/product/item/{id}";
     const PRODUCT_PRICE = "/api/pim/product/price/{id}";
     const CART_CREATE = "/api/cart/create/{store_id}";
