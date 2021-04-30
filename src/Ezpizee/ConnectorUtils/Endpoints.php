@@ -13,6 +13,8 @@ class Endpoints
     const PREDRFIND_COUNTRY = "/api/global-property/predefined/countries";
     const PAYMENT_SERVICE = "/api/payment/list";
     const PAYMENT_SERVICE_URL = "/api/payment/{payment_type}/{payment_id}/processing/url/{method_type}/{cart_id}";
+    const PAYMENT_CREATE_ORDER = "/api/payment/{payment_type}/{payment_id}/{method_type}/order/create/{cart_id}";
+    const PAYMENT_CAPTURE_ORDER = "/api/payment/{payment_type}/{payment_id}/{method_type}/order/capture/{order_payment_id}/{cart_id}";
     const PAYMENT_VERIFY = "/api/payment/check/byorder/{cart_id}";
     const PRODUCT_ITEM = "/api/pim/product/item/{id}";
     const PRODUCT_PRICE = "/api/pim/product/price/{id}";
