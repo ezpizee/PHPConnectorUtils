@@ -28,6 +28,9 @@ class Endpoints
     const CART_APPLY_COUPON = "/api/cart/apply/coupon/{cart_id}";
     const CART_CHECKOUT = "/api/cart/checkout/{cart_id}";
     const CART_REMOVE_COUPON = "/api/cart/remove/offer-type/coupon/{cart_id}";
+    const CUSTOMER_PROFILE = "/api/storefront/customer/item/{id}";
+    const CUSTOMER_REGISTER = '/api/storefront/customer/register';
+    const CUSTOEMR_LOGIN = '/api/storefront/customer/login';
 
 
     public static function endpoint(string $str, array $params = []): string
