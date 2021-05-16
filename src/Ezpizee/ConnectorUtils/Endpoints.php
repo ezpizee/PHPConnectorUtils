@@ -19,6 +19,7 @@ class Endpoints
     const PRODUCT_ITEM = "/api/pim/product/item/{id}";
     const PRODUCT_PRICE = "/api/pim/product/price/{id}";
     const CART_CREATE = "/api/cart/create/{store_id}";
+    const CART_UPDATE = "/api/cart/update/{id}";
     const CART_EMPTY = "/api/cart/empty/{cart_id}";
     const CART_CONTENT = "/api/cart/content/by/id/{id}";
     const CART_ADD_ITEM = "/api/cart/add/items/{cart_id}";
