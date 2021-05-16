@@ -31,6 +31,7 @@ class Endpoints
     const CART_REMOVE_COUPON = "/api/cart/remove/offer-type/coupon/{cart_id}";
     const CUSTOMER_PROFILE = "/api/storefront/customer/item/{id}";
     const CUSTOMER_REGISTER = '/api/storefront/customer/register';
+    const CUSTOMER_UPDATE = '/api/storefront/customer/update/{id}';
     const CUSTOEMR_LOGIN = '/api/storefront/customer/login';
 
 
