@@ -19,6 +19,7 @@ class Endpoints
     const PRODUCT_ITEM = "/api/pim/product/item/{id}";
     const PRODUCT_PRICE = "/api/pim/product/price/{id}";
     const PRODUCT_LIST = "/api/pim/product/list/bychannel/web/numperpage/{number_per_page}/start/{start}";
+    const FEATURED_PRODUCTS = "/api/pim/product/feature/{feature_type}";
     const CART_CREATE = "/api/cart/create/{store_id}";
     const CART_UPDATE = "/api/cart/update/{id}";
     const CART_EMPTY = "/api/cart/empty/{cart_id}";
